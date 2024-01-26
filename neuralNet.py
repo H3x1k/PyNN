@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from random import random
-import TKinter
+#import TKinter
 
 #def f(x):
   #return np.sin(x)
@@ -9,6 +9,9 @@ import TKinter
 #y = f(x)
 #plt.plot(x,y, color='black')
 #plt.show()
+
+# 1 is good
+# 0 is bad
 
 def identity(x):
   return x
@@ -54,8 +57,6 @@ class Layer:
       else:
         out.append(self.activation_function(x))
     return out
-      
-
 
 class NeuralNetwork:
   layers = []
@@ -77,10 +78,31 @@ class NeuralNetwork:
     for i in self.layers:
       values = i.computeOutput(values)
     return values
+  
+def createData(function, D, R, amount):
+  xData = []
+  yData = []
+  zData = []
+  for i in range(amount):
+    x = (D * random()) - (D / 2)
+    y = (R * random()) - (R / 2)
+    xData.append(x)
+    yData.append(y)
+    if y > function(x):
+      zData.append(0)
+  return [xData, yData, zData]
 
+def randomFunction(x):
+  a = 2.075821551294103
+  b = -1.8407634918907476
+  c = -2.8569862359719056
+  d = 3.682377752576315
+  return a*x**3 + b*x**2 + c*x + d
 
+dataAmount = 100
 
 NN = NeuralNetwork(2, 2, 1, 2)
-print(NN.computeOutput([1,1]))
+data = createData(randomFunction, 20, 20, dataAmount)
 
-TKinter()
+for i in range(dataAmount):
+  print(NN.computeOutput([data[0][i],data[1][i]]))
