@@ -10,8 +10,8 @@ from random import random
 #plt.plot(x,y, color='black')
 #plt.show()
 
-# 1 is good
-# 0 is bad
+# 1, 0 is good
+# 0, 1 is bad
 
 def identity(x):
   return x
@@ -28,19 +28,25 @@ def ReLU(x):
   else:
     return x
   
-def sigmoid(x):
-  return np.exp(x)/(np.exp(x)+1)
+def sigmoid(x, derivative=False):
+  if derivative:
+    return sigmoid(x)*(1-sigmoid(x))
+  else:
+    return 1/(np.exp(-x)+1)
     
 class Layer:
-  weights = []
+  weights = [] # 2D Array weight[input][output]
   biases = []
   def __init__(self, node_size, input_size, activation_function = None):
     self.node_size = node_size
     self.output_size = node_size
     self.input_size = input_size
     self.activation_function = activation_function
-    for i in range(input_size*2):
-      self.weights.append(5*random()+1)
+    for j in range(input_size):
+      nodeWeights = []
+      for k in range(node_size):
+        nodeWeights.append(5*random()+1)
+      self.weights.append(nodeWeights)
     for i in range(input_size):
       self.biases.append(0)
 
@@ -49,60 +55,95 @@ class Layer:
       raise ValueError("wrong amount of inputs")
     out = []
     for i in range(self.output_size):
-      x = 0
+      x = self.biases[i]
       for j in range(len(input)):
-        x += input[j] * self.weights[self.input_size * i + j]
-      if self.activation_function == None:
-        out.append(x)
-      else:
-        out.append(self.activation_function(x))
+        x += input[j] * self.weights[j][i]
+      out.append(self.activation_function(x))
     return out
+  
+  def activationFunction(self, input):
+    if self.activation_function == None:
+      return input
+    else:
+      return self.activation_function(input)
 
 class NeuralNetwork:
   layers = []
-  def __init__(self, input_size, output_size, layer_size, node_size, activation_function = ReLU):
+  def __init__(self, input_size, output_size, Hlayer_size, node_size, activation_function = None):
     self.input_size = input_size
     self.output_size = output_size
-    for i in range(layer_size):
-      if i == 1:
+    for i in range(Hlayer_size + 1):
+      if i == 0: # First Hidden Layer
         self.layers.append(Layer(node_size, input_size, activation_function))
-      elif i == layer_size - 1:
-        self.layers.append(Layer(output_size, node_size))
-      else:
+      elif i == Hlayer_size: # Output Layer
+        self.layers.append(Layer(output_size, node_size, activation_function))
+      else: # Hidden Layer
         self.layers.append(Layer(node_size, node_size, activation_function))
 
   def computeOutput(self, input):
     if len(input) != self.input_size:
       raise ValueError("wrong amount of inputs")
-    values = input
     for i in self.layers:
-      values = i.computeOutput(values)
-    return values
+      input = i.computeOutput(input)
+    return input
+  
+  def nodeCost(self, output, expected):
+    error = output - expected
+    return error * error
+  
+  def Cost(self, dataPoint):
+
+  
+  def calculateDescent(self, data):
+    weightsChanges = []
+    biasChanges = []
+    for l in range(len(self.layers)):
+      for w in range(len(self.layers[l].weights)):
+        change = 0
+        for i in range(len(data[0])):
+
+
+  
+  def train(self, data):
+    self.calculateDescent(data)
   
 def createData(function, D, R, amount):
-  xData = []
-  yData = []
-  zData = []
+  Data = []
   for i in range(amount):
-    x = (D * random()) - (D / 2)
-    y = (R * random()) - (R / 2)
-    xData.append(x)
-    yData.append(y)
+    dataPoint = []
+    x = (D * random())
+    y = (R * random())
+    dataPoint.append(x)
+    dataPoint.append(y)
     if y > function(x):
-      zData.append(0)
-  return [xData, yData, zData]
+      dataPoint.append(0)
+    else:
+      dataPoint.append(1)
+    Data.append(dataPoint)
+  return Data
 
 def randomFunction(x):
-  a = 2.075821551294103
-  b = -1.8407634918907476
-  c = -2.8569862359719056
-  d = 3.682377752576315
-  return a*x**3 + b*x**2 + c*x + d
+  b = -2.8407634918907476
+  c = 2.8569862359719056
+  d = 2
+  return b*x**2 + c*x + d
 
-dataAmount = 100
+dataAmount = 1000
+dataDomain = 3
+dataRange = 3
 
-NN = NeuralNetwork(2, 2, 1, 2)
-data = createData(randomFunction, 20, 20, dataAmount)
+NN = NeuralNetwork(2, 2, 1, 2, sigmoid)
+data = createData(randomFunction, dataDomain, dataRange, dataAmount)
 
+correctAmount = 0
 for i in range(dataAmount):
-  print(NN.computeOutput([data[0][i],data[1][i]]))
+  estimate = NN.computeOutput([data[i][0],data[i][1]])
+  #print(estimate)
+  if estimate[0] > estimate[1]:
+    if data[i][0] == 1:
+      correctAmount += 1
+  elif estimate[1] > estimate[0]:
+    if data[i][1] == 0:
+      correctAmount += 1
+
+print((correctAmount/dataAmount)*100, "% correct")
