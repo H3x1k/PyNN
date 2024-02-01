@@ -37,6 +37,8 @@ def sigmoid(x, derivative=False):
 class Layer:
   weights = [] # 2D Array weight[input][output]
   biases = []
+  inputs = []
+  weightActivations = []
   def __init__(self, node_size, input_size, activation_function = None):
     self.node_size = node_size
     self.output_size = node_size
@@ -91,17 +93,32 @@ class NeuralNetwork:
     error = output - expected
     return error * error
   
-  def Cost(self, dataPoint):
+  #def Cost(self, dataPoint):
 
   
   def calculateDescent(self, data):
+
     weightsChanges = []
     biasChanges = []
-    for l in range(len(self.layers)):
-      for w in range(len(self.layers[l].weights)):
-        change = 0
-        for i in range(len(data[0])):
 
+    for l in self.layers:
+      layerWeights = []
+      for w in l.weights:
+        layerWeights.append(0)
+      weightsChanges.append(layerWeights)
+
+    for l in self.layers:
+      layerBiases = []
+      for b in l.biases:
+        layerWeights.append(0)
+      biasChanges.append(layerBiases)
+
+    for i in range(len(data[0])):
+      layerWeights = []
+      for li in range(len(weightsChanges)):
+        for l in range(li + 1):
+          for i in range(len(l.weights)):
+            layerWeights[i] = 
 
   
   def train(self, data):
